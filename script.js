@@ -311,4 +311,97 @@ function genMaze(cx, cy, s) {
 		}
 	}
 }
+//draw maze
+function drawMaze() {
+	for (let x = 0; x < mx; x++) {
+		for (let y = 0; y < my; y++) {
+			let l = grid[y][x].l;
+			let r = grid[y][x].r;
+			let u = grid[y][x].u;
+			let d = grid[y][x].d;
 
+			drawLines(x, y, l, r, u, d);
+		}
+	}
+}
+
+//draw the actual lines
+function drawLines(x, y, l, r, u, d) {
+	let top = (y + 1) * step;
+	let left = (x + 1) * step;
+	if (l === 0 && x > 0) {
+		let el = document.createElement("div");
+		el.style.left = left + "px";
+		el.style.height = step + "px";
+		el.style.top = top + "px";
+		el.setAttribute("class", "barrier");
+		el.style.width = bwidth + "px";
+		maze.appendChild(el);
+	}
+
+	if (d === 0 && y < my - 1) {
+		let el = document.createElement("div");
+		el.style.left = left + "px";
+		el.style.height = bwidth + "px";
+		el.style.top = top + step + "px";
+		el.setAttribute("class", "barrier");
+		el.style.width = step + bwidth + "px";
+		maze.appendChild(el);
+	}
+}
+
+function limShuffle(array, s) {
+	let con = array.slice(0, s);
+	let ran = array.slice(s, array.length);
+
+	for (let i = ran.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		//console.log(i, j);
+		[ran[i], ran[j]] = [ran[j], ran[i]];
+	}
+	let comb = con.concat(ran);
+	return comb;
+}
+
+function animKeys(key) {
+	if (key.id === "bu") {
+		key.style.border = "3px #fff solid";
+		key.style.borderTop = "1px #fff solid";
+		key.style.borderBottom = "4px #fff solid";
+		key.style.transform = "translateY(-2px)";
+	}
+	if (key.id === "bd") {
+		key.style.border = "3px #fff solid";
+		key.style.borderBottom = "1px #fff solid";
+		key.style.borderTop = "4px #fff solid";
+		key.style.transform = "translateY(2px)";
+	}
+	if (key.id === "bl") {
+		key.style.border = "3px #fff solid";
+		key.style.borderLeft = "1px #fff solid";
+		key.style.borderRight = "4px #fff solid";
+		key.style.transform = "translateX(-2px)";
+	}
+	if (key.id === "br") {
+		key.style.border = "3px #fff solid";
+		key.style.borderRight = "1px #fff solid";
+		key.style.borderLeft = "4px #fff solid";
+		key.style.transform = "translateX(2px)";
+	}
+
+	//reset
+	setTimeout(() => {
+		key.style.border = "2px #fff solid";
+		key.style.borderTop = "2px #fff solid";
+		key.style.borderBottom = "2px #fff solid";
+		key.style.borderLeft = "2px #fff solid";
+		key.style.borderRight = "2px #fff solid";
+		key.style.transform = "translateY(0px)";
+		key.style.transform = "translateX(0px)";
+	}, "150");
+}
+
+let maxl = 0;
+let prevl = 0;
+function updateEmo(lr) {
+	
