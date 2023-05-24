@@ -401,7 +401,58 @@ function animKeys(key) {
 	}, "150");
 }
 
+//manual emo
 let maxl = 0;
 let prevl = 0;
 function updateEmo(lr) {
-	
+	if (lr) {
+		if (thingie.offsetLeft < maxl) {
+			emo.innerHTML = "🙄";
+		}
+		if (thingie.offsetLeft < maxl - 2 * step) {
+			emo.innerHTML = "😒";
+		}
+		if (thingie.offsetLeft < maxl - 4 * step) {
+			emo.innerHTML = "😣";
+		}
+		if (thingie.offsetLeft < maxl - 6 * step) {
+			emo.innerHTML = "🤬";
+		}
+		if (thingie.offsetLeft > prevl) {
+			emo.innerHTML = "😐";
+		}
+		if (thingie.offsetLeft >= maxl) {
+			if (thingie.offsetLeft > mazeWidth * 0.6) {
+				emo.innerHTML = "😀";
+			} else {
+				emo.innerHTML = "🙂";
+			}
+			maxl = thingie.offsetLeft;
+		}
+		if (thingie.offsetLeft === 0) {
+			emo.innerHTML = "😢";
+		}
+		if (
+			thingie.offsetLeft > mazeWidth - step &&
+			thingie.offsetTop === home.offsetTop
+		) {
+			emo.innerHTML = "🤗";
+			home.innerHTML = "🏠";
+		}
+		if (thingie.offsetLeft > mazeWidth) {
+			emo.innerHTML = "";
+			home.innerHTML = "🥳";
+		}
+		prevl = thingie.offsetLeft;
+	} else {
+		if (thingie.offsetLeft > (mazeWidth - step) && thingie.offsetTop === home.offsetTop) {
+			emo.innerHTML = "🤗";
+		}else{
+			if(thingie.offsetLeft > (mazeWidth - step) && thingie.offsetTop != home.offsetTop){
+				emo.innerHTML = "🙄";
+			}
+		}
+	}
+}
+
+	 	
