@@ -453,6 +453,333 @@ function updateEmo(lr) {
 			}
 		}
 	}
+//Another variant: detect distance to target using old Greeks: Phytagoras (More scientifically interesting, but somehow less funny 🙃)
+	// 	let h = home.offsetLeft - thingie.offsetLeft;
+	// 	let v = Math.abs(home.offsetTop - thingie.offsetTop);
+	// 	let dist = Math.hypot(h, v);
+	// 	console.log(h, v, dist);
+
+	// 	//dist = h;
+
+	// 	//dynamic stuff
+	// 	if (dist <= prevDist) {
+	// 		//happy
+	// 		emo.innerHTML = "😀";
+	// 	} else {
+	// 		//sad
+	// 		emo.innerHTML = "🙄";
+	// 	}
+
+	// 	//fixed values
+	// 	if (dist === 20) {
+	// 		emo.innerHTML = "🤗";
+	// 	}
+	// 	if (dist === 0) {
+	// 		emo.innerHTML = "🥳";
+	// 		home.innerHTML = "";
+	// 	} else {
+	// 		home.innerHTML = "🏠";
+	// 	}
+
+	// 	prevDist = dist;
 }
+
+//navigate with tilting
+window.addEventListener("deviceorientation", handleOrientation);
+
+function tiltTimer() {
+	allowTilt = false;
+	setTimeout(() => {
+		allowTilt = true;
+	}, "200");
+}
+
+function handleOrientation(e) {
+	//up/down = beta (smaller = up)
+	//left/right = gamma (neg = left)
+
+	if (firstMove) {
+		lastUD = e.beta;
+		lastLR = e.gamma;
+		firstMove = false;
+	}
+	if (allowTilt) {
+		if (e.beta < lastUD - mThreshold) {
+			up();
+			tiltTimer();
+		}
+		if (e.beta > lastUD + mThreshold) {
+			down();
+			tiltTimer();
+		}
+		if (e.gamma < lastLR - mThreshold) {
+			left();
+			tiltTimer();
+		}
+		if (e.gamma > lastLR + mThreshold) {
+			right();
+			tiltTimer();
+		}
+	}
+}
+
+//navigate with controller
+let haveEvents = "ongamepadconnected" in window;
+let gp = [];
+let allowU = true;
+let allowD = true;
+let allowL = true;
+let allowR = true;
+let allowAU = true;
+let allowAD = true;
+let allowAL = true;
+let allowAR = true;
+
+window.addEventListener("gamepadconnected", connectGamepad);
+window.addEventListener("gamepaddisconnected", disconnectGamepad);
+
+function disconnectGamepad() {
+	gp = [];
+}
+
+function connectGamepad(e) {
+	console.log("trying to connect");
+	gp[0] = e.gamepad;
+	requestAnimationFrame(updateStatus);
+}
+
+function updateStatus() {
+	if (!haveEvents) {
+		scangamepads();
+	}
+
+	for (let i = 0; i < gp[0].buttons.length; i++) {
+		//up
+		if (gp[0].buttons[12].pressed) {
+			if (allowU) {
+				up();
+				gpTimer("u");
+			}
+		}
+		if (pg[0].buttons[12].pressed === false) {
+			allowU = true;
+		}
+
+		//down
+		if (gp[0].buttons[13].pressed) {
+			if (allowD) {
+				down();
+				gpTimer("d");
+			}
+		}
+		if (gp[0].buttons[13].pressed === false) {
+			allowD = true;
+		}
+
+		//left
+		if (gp[0].buttons[14].pressed) {
+			if (allowL) {
+				left();
+				gpTimer("l");
+			}
+		}
+		if (gp[0].buttons[14].pressed === false) {
+			allowL = true;
+		}
+
+		//right
+		if (gp[0].buttons[15].pressed) {
+			if (allowR) {
+				right();
+				gpTimer("r");
+			}
+		}
+		if (gp[0].buttons[15].pressed === false) {
+			allowR = true;
+		}
+	}
+
+	for (let j = 0; j < gp[0].axes.length; j++) {
+		console.log(gp[0].axes[3]);
+		
+		if (gp[0].axes[1] < -0.8 || gp[0].axes[3] < -0.8) {
+			if (allowAU) {
+				up();
+				gpATimer("u");
+			}
+		}
+		if (gp[0].axes[1] > -0.8 || gp[0].axes[3] > -0.8) {
+			if (allowAD) {
+				down();
+				gpATimer("d");
+			}
+		}
+		if (gp[0].axes[0] < -0.8 || gp[0].axes[2] < -0.8) {
+			if (allowAL) {
+				left();
+				gpATimer("l");
+			}
+		}
+		if (gp[0].axes[0] > -0.8 || gp[0].axes[2] > -0.8) {
+			if (allowAR) {
+				right();
+				gpATimer("r");
+			}
+		}
+	}
+	requestAnimationFrame(updateStatus);
+}
+function scangamepads() {
+	let gamepads = navigator.getGamepads
+	? navigator.getGamepads()
+	: navigator.webkitGetGamepads
+	? navigator.webkitGetGamepads()
+	: [];
+
+	for (let i = 0; i < gamepads.length; i++) {
+		if (gamepads[i]) {
+			if (game[i].index in gp) {
+				gp[gamepads[i].index] = gamepads[i];
+			} else {
+				addgamepad(gamepads[i]);
+			}
+		}
+	}
+}
+
+if (!haveEvents) {
+	setInterval(scangamepads, 500);
+}
+
+function gpTimer(adir) {
+	switch (adir) {
+		case "u":
+			allowU = false;
+			break;
+
+		case "d":
+			allowD = false;
+			break;
+
+		case "l":
+			allowL = false;
+			break;
+
+		case "r":
+			allowR = false;
+			break;
+	}
+
+	setTimeout(() =>  {
+		allowU = true;
+		allowD = true;
+		allowL = true;
+		allowR = true;
+	}, "200");
+}
+
+function gpATimer(adir) {
+	switch (adir) {
+		case "u":
+			allowU = false;
+			break;
+
+		case "d":
+			allowD = false;
+			break;
+
+		case "l":
+			allowL = false;
+			break;
+
+		case "r":
+			allowR = false;
+			break;
+	}
+
+	setTimeout(() =>  {
+		allowAU = true;
+		allowAD = true;
+		allowAL = true;
+		allowAR = true;
+	}, "200");
+}
+
+//navigate with swipe
+let lasttouchpY = 0;
+let lasttouchpX = 0;
+cont.addEventListener("touchstart", (e) => {
+	lasttouchpY = e.changedTouches[0].pageY;
+	lasttouchpX = e.changedTouches[0].pageX;
+});
+
+cont.addEventListener("touchmove", (e) => {
+	e.preventDefault();
+	let diffY = e.changedTouches[0].pageY - lasttouchpY;
+	let diffX = e.changedTouches[0].pageX - lasttouchpX;
+	if (diffY > sThreshold) {
+		down();
+		lasttouchpY = e.changedTouches[0].pageY;
+	} else {
+		if (diffY < -1 * sThreshold) {
+			up();
+			lasttouchpY =e.changedTouches[0].pageY;
+		}
+	}
+	if (diffX > sThreshold) {
+		right();
+		lasttouchpX = e.changedTouches[0].pageX;
+	} else {
+		if (diffX < -1 * sThreshold) {
+			left();
+			lasttouchpX =e.changedTouches[0].pageX;
+		}
+	}
+});
+
+//navigate with scrolling
+let lastscrollY = 0;
+let lastscrollX = 0;
+cont.addEventListener("wheel", (e) => {
+	//handle Y scrolling
+	lastscrollY = lastscrollY + e.deltaY;
+	if (lastscrollY > 0 && e.deltaY < 0) {
+		lastscrollY =0;
+	}
+	if (lastscrollY < 0 && e.deltaY > 0) {
+		lastscrollY = 0;
+	}
+
+	if (lastscrollY > sThreshold) {
+		up();
+		lastscrollY = 0;
+	}
+	if (lastscrollY < (-1 * scThreshold)) {
+		down();
+		lastscrollY = 0;
+	}
+
+	//handle X scrolling
+	lastscrollX = lasttouchpX + e.deltaX;
+	if (lastscrollX > 0 && e.deltaX < 0) {
+		lastscrollX =0;
+	}
+	if (lastscrollX < 0 && e.deltaX > 0) {
+		lastscrollX = 0;
+	}
+
+	if (lastscrollX > sThreshold) {
+		screenLeft();
+		lastscrollX = 0;
+	}
+	if (lastscrollX < (-1 * scThreshold)) {
+		right();
+		lastscrollX = 0;
+	}
+});
+
+
+
+
 
 	 	
